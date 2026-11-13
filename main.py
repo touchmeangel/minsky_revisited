@@ -13,7 +13,6 @@ def relu(x):
 def derivative_relu(x):
     return (x > 0).astype(float)
 
-# XOR
 class MLP:
     def __init__(self) -> None:
         # input 2x10 -> 10x10 -> 10x2
@@ -33,8 +32,8 @@ class MLP:
         return float(np.mean(np.sum((out - Y) ** 2, axis=1)))
     
     # def train():
-        
-        
+
+# XOR
 nn = MLP()
 t_data = np.array([[0, 0, 1, 0],
                    [0, 1, 0, 1],
