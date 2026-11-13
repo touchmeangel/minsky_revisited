@@ -15,9 +15,9 @@ def derivative_relu(x):
 
 class MLP:
     def __init__(self) -> None:
-        # input 2x10 -> 10x10 -> 10x2
-        self.weights = [np.random.randn(2, 10), np.random.randn(10, 10), np.random.randn(10, 2)]
-        self.biases = [np.random.randn(10), np.random.randn(10), np.random.randn(2)]
+        # input 2x3 -> 3x3 -> 3x2
+        self.weights = [np.random.randn(2, 3), np.random.randn(3, 3), np.random.randn(3, 2)]
+        self.biases = [np.random.randn(3), np.random.randn(3), np.random.randn(2)]
         self.func = [relu, relu, sigmoid]
         
     def feedforward(self, X: np.ndarray) -> np.ndarray:
@@ -31,7 +31,15 @@ class MLP:
         out = self.feedforward(X)
         return float(np.mean(np.sum((out - Y) ** 2, axis=1)))
     
-    # def train():
+    # sq = np.array([[1., 3.],
+    #            [2., 2.]])    # 2 samples, 2 outputs
+
+    # np.mean(sq)                       # 8 / 4 = 2.0  -> divides by N * K (samples * outputs)
+    # np.mean(np.sum(sq, axis=1))       # (4 + 4) / 2 = 4.0  -> divides by N only
+    
+    def train(self, data: np.ndarray):
+        loss = nn.evaluate(t_data)
+        print(f"loss: {loss}")
 
 # XOR
 nn = MLP()
@@ -40,4 +48,4 @@ t_data = np.array([[0, 0, 1, 0],
                    [1, 0, 0, 1],
                    [1, 1, 1, 0]], dtype=float)
 
-print(nn.evaluate(t_data))
+nn.train(t_data)
