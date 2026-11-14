@@ -54,7 +54,8 @@ class MLP:
         # ∂C/∂a = 2(sigmoid(aW + b)-y))
         # ∂a/∂z = sigmoid'(aW + b)
         # ∂z/∂W = a^L-1
-        # W
+        # ∂z/∂b = 1
+        # W, b
         
         # ∂z/∂a^L-1 = W
         # ∂a^L-1/∂z^L-1 = relu'(z^L-1)
@@ -63,9 +64,11 @@ class MLP:
         delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
         for i in reversed(range(len(self.weights))):
             grad_W = step * ((activations[i].T @ delta) / N)
+            grad_b = step * np.mean(delta)
             if i > 0:
                 delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
             self.weights[i] -= grad_W
+            self.biases[i] -= grad_b
             
 # XOR
 nn = MLP()
