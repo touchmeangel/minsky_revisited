@@ -15,9 +15,8 @@ def derivative_relu(x):
 
 class MLP:
     def __init__(self) -> None:
-        # input 2x3 -> 3x3 -> 3x2
-        self.weights = [np.random.randn(2, 3), np.random.randn(3, 3), np.random.randn(3, 2)]
-        self.biases = [np.random.randn(3), np.random.randn(3), np.random.randn(2)]
+        self.weights = [np.random.randn(2, 20), np.random.randn(20, 20), np.random.randn(20, 2)]
+        self.biases = [np.random.randn(20), np.random.randn(20), np.random.randn(2)]
         self.func = [relu, relu, sigmoid]
         self.dfunc = [derivative_relu, derivative_relu, derivative_sigmoid]
         
