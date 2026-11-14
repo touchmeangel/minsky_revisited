@@ -50,8 +50,6 @@ class MLP:
         X, Y = data[:, :2], data[:, 2:]
         N = X.shape[0]
         out, zs, activations = self.feedforward(X)
-        loss = self._evaluate(out, Y)
-        print(f"loss: {loss}")
         # sigmoid(aW + b)-y)**2 = 2(sigmoid(aW + b)-y)) * sigmoid'(aW + b) * a^L-1
         # ∂C/∂a = 2(sigmoid(aW + b)-y))
         # ∂a/∂z = sigmoid'(aW + b)
@@ -67,9 +65,6 @@ class MLP:
             self.weights[i] -= step * ((activations[i].T @ delta) / N)
             delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
             
-        loss = self.evaluate(t_data)
-        print(f"loss: {loss}")
-        
 # XOR
 nn = MLP()
 t_data = np.array([[0, 0, 1, 0],
@@ -77,4 +72,8 @@ t_data = np.array([[0, 0, 1, 0],
                    [1, 0, 0, 1],
                    [1, 1, 1, 0]], dtype=float)
 
+before_loss = nn.evaluate(t_data)
+print(f"loss before: {before_loss}")
 nn.train(t_data)
+loss = nn.evaluate(t_data)
+print(f"loss after ({(before_loss-loss)*100/before_loss}% improvement): {loss}")
