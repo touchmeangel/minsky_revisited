@@ -63,12 +63,12 @@ class MLP:
         # W^L-1
         delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
         for i in reversed(range(len(self.weights))):
-            grad_W = step * ((activations[i].T @ delta) / N)
-            grad_b = step * np.mean(delta)
+            grad_W = ((activations[i].T @ delta) / N)
+            grad_b = delta.mean(axis=0)
             if i > 0:
                 delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
-            self.weights[i] -= grad_W
-            self.biases[i] -= grad_b
+            self.weights[i] -= step * grad_W
+            self.biases[i] -= step * grad_b
             
 # XOR
 nn = MLP()
