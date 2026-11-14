@@ -15,8 +15,8 @@ def derivative_relu(x):
 
 class MLP:
     def __init__(self) -> None:
-        self.weights = [np.random.randn(2, 20), np.random.randn(20, 20), np.random.randn(20, 2)]
-        self.biases = [np.random.randn(20), np.random.randn(20), np.random.randn(2)]
+        self.weights = [np.random.randn(2, 5), np.random.randn(5, 5), np.random.randn(5, 2)]
+        self.biases = [np.random.randn(5), np.random.randn(5), np.random.randn(2)]
         self.func = [relu, relu, sigmoid]
         self.dfunc = [derivative_relu, derivative_relu, derivative_sigmoid]
         
@@ -45,10 +45,10 @@ class MLP:
     # np.mean(sq)                       # 8 / 4 = 2.0  -> divides by N * K (samples * outputs)
     # np.mean(np.sum(sq, axis=1))       # (4 + 4) / 2 = 4.0  -> divides by N only
     
-    def train(self, data: np.ndarray, step: float = 0.01, cycles: int = 10):
+    def train(self, data: np.ndarray, step: float = 0.1, epochs: int = 5000, log_every: int = 500):
         X, Y = data[:, :2], data[:, 2:]
         N = X.shape[0]
-        for _ in range(cycles):
+        for epoch in range(epochs):
             # sigmoid(aW + b)-y)**2 = 2(sigmoid(aW + b)-y)) * sigmoid'(aW + b) * a^L-1
             # ∂C/∂a = 2(sigmoid(aW + b)-y))
             # ∂a/∂z = sigmoid'(aW + b)
@@ -61,6 +61,8 @@ class MLP:
             # ∂z^L-1/∂W^L-1 = a^L-2
             # W^L-1
             out, zs, activations = self.feedforward(X)
+            if epoch % log_every == 0:
+                print(epoch, self._evaluate(out, Y))
             delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
             for i in reversed(range(len(self.weights))):
                 grad_W = ((activations[i].T @ delta) / N)
@@ -79,6 +81,10 @@ t_data = np.array([[0, 0, 1, 0],
 
 before_loss = nn.evaluate(t_data)
 print(f"loss before: {before_loss}")
-nn.train(t_data, cycles=100000)
+nn.train(t_data, step=0.1, epochs=50000)
 loss = nn.evaluate(t_data)
 print(f"loss after ({(before_loss-loss)*100/before_loss}% improvement): {loss}")
+print(nn.feedforward(np.array([0, 0]))[0])
+print(nn.feedforward(np.array([0, 1]))[0])
+print(nn.feedforward(np.array([1, 0]))[0])
+print(nn.feedforward(np.array([1, 1]))[0])
