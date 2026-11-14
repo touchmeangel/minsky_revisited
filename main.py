@@ -45,29 +45,30 @@ class MLP:
     # np.mean(sq)                       # 8 / 4 = 2.0  -> divides by N * K (samples * outputs)
     # np.mean(np.sum(sq, axis=1))       # (4 + 4) / 2 = 4.0  -> divides by N only
     
-    def train(self, data: np.ndarray, step: float = 0.01):
+    def train(self, data: np.ndarray, step: float = 0.01, cycles: int = 10):
         X, Y = data[:, :2], data[:, 2:]
         N = X.shape[0]
-        out, zs, activations = self.feedforward(X)
-        # sigmoid(aW + b)-y)**2 = 2(sigmoid(aW + b)-y)) * sigmoid'(aW + b) * a^L-1
-        # ∂C/∂a = 2(sigmoid(aW + b)-y))
-        # ∂a/∂z = sigmoid'(aW + b)
-        # ∂z/∂W = a^L-1
-        # ∂z/∂b = 1
-        # W, b
-        
-        # ∂z/∂a^L-1 = W
-        # ∂a^L-1/∂z^L-1 = relu'(z^L-1)
-        # ∂z^L-1/∂W^L-1 = a^L-2
-        # W^L-1
-        delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
-        for i in reversed(range(len(self.weights))):
-            grad_W = ((activations[i].T @ delta) / N)
-            grad_b = delta.mean(axis=0)
-            if i > 0:
-                delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
-            self.weights[i] -= step * grad_W
-            self.biases[i] -= step * grad_b
+        for _ in range(cycles):
+            # sigmoid(aW + b)-y)**2 = 2(sigmoid(aW + b)-y)) * sigmoid'(aW + b) * a^L-1
+            # ∂C/∂a = 2(sigmoid(aW + b)-y))
+            # ∂a/∂z = sigmoid'(aW + b)
+            # ∂z/∂W = a^L-1
+            # ∂z/∂b = 1
+            # W, b
+            
+            # ∂z/∂a^L-1 = W
+            # ∂a^L-1/∂z^L-1 = relu'(z^L-1)
+            # ∂z^L-1/∂W^L-1 = a^L-2
+            # W^L-1
+            out, zs, activations = self.feedforward(X)
+            delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
+            for i in reversed(range(len(self.weights))):
+                grad_W = ((activations[i].T @ delta) / N)
+                grad_b = delta.mean(axis=0)
+                if i > 0:
+                    delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
+                self.weights[i] -= step * grad_W
+                self.biases[i] -= step * grad_b
             
 # XOR
 nn = MLP()
@@ -78,6 +79,6 @@ t_data = np.array([[0, 0, 1, 0],
 
 before_loss = nn.evaluate(t_data)
 print(f"loss before: {before_loss}")
-nn.train(t_data)
+nn.train(t_data, cycles=100000)
 loss = nn.evaluate(t_data)
 print(f"loss after ({(before_loss-loss)*100/before_loss}% improvement): {loss}")
