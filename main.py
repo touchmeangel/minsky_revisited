@@ -19,17 +19,26 @@ class MLP:
         self.weights = [np.random.randn(2, 3), np.random.randn(3, 3), np.random.randn(3, 2)]
         self.biases = [np.random.randn(3), np.random.randn(3), np.random.randn(2)]
         self.func = [relu, relu, sigmoid]
+        self.dfunc = [derivative_relu, derivative_relu, derivative_sigmoid]
         
-    def feedforward(self, X: np.ndarray) -> np.ndarray:
-        a = X                                    # shape (N, 2), the activation
+    def feedforward(self, X: np.ndarray) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
+        a = X
+        zs = []
+        activations = [X]
         for W, b, f in zip(self.weights, self.biases, self.func):
-            a = f(a @ W + b)
-        return a    
+            z = a @ W + b
+            a = f(z)
+            zs.append(z)
+            activations.append(a)
+        return a, zs, activations
+    
+    def _evaluate(self, out: np.ndarray, Y: np.ndarray) -> float:
+        return float(np.mean(np.sum((out - Y) ** 2, axis=1)))
         
     def evaluate(self, data: np.ndarray) -> float:
         X, Y = data[:, :2], data[:, 2:]          # inputs (N, 2), targets (N, 2)
-        out = self.feedforward(X)
-        return float(np.mean(np.sum((out - Y) ** 2, axis=1)))
+        out = self.feedforward(X)[0]
+        return self._evaluate(out, Y)
     
     # sq = np.array([[1., 3.],
     #            [2., 2.]])    # 2 samples, 2 outputs
@@ -38,14 +47,44 @@ class MLP:
     # np.mean(np.sum(sq, axis=1))       # (4 + 4) / 2 = 4.0  -> divides by N only
     
     def train(self, data: np.ndarray):
-        loss = nn.evaluate(t_data)
+        X, Y = data[:, :2], data[:, 2:]
+        out, zs, activations = self.feedforward(X)
+        loss = self._evaluate(out, Y)
         print(f"loss: {loss}")
-
+        # sigmoid(aW + b)-y)**2 = 2(sigmoid(aW + b)-y)) * sigmoid'(aW + b) * a^L-1
+        # ∂C/∂a = 2(sigmoid(aW + b)-y))
+        # ∂a/∂z = sigmoid'(aW + b)
+        # ∂z/∂W = a^L-1
+        # W
+        
+        # ∂z/∂a^L-1 = W
+        # ∂a^L-1/∂z^L-1 = relu'(z^L-1)
+        # ∂z^L-1/∂W^L-1 = a^L-2
+        # W^L-1
+        start = (2*(out-Y)) * self.dfunc[-1](zs[-1])
+        print(f"zs: {zs[-1]}")
+        print(f"w: {self.weights[-1]}")
+        grad = []
+        for i in reversed(range(len(self.weights)-1)): # HIGHLY UNOPTIMISED
+            grad.append(start * activations[i].T)
+            
+            # print(f"activations: {activations[i]}")
+            # print(f"zs: {zs[i]}")
+            # print(f"w: {self.weights[i]}")
+            
+            break
+        grad.reverse()
+        print(grad)
+        self.weights[-1] -= 0.01 *grad[0]
+        loss = self.evaluate(t_data)
+        print(f"FINAL LOSS: {loss}") # IT FUCKING WORKS!!!
+        
 # XOR
 nn = MLP()
 t_data = np.array([[0, 0, 1, 0],
-                   [0, 1, 0, 1],
-                   [1, 0, 0, 1],
-                   [1, 1, 1, 0]], dtype=float)
+                #    [0, 1, 0, 1],
+                #    [1, 0, 0, 1],
+                #    [1, 1, 1, 0]
+                   ], dtype=float)
 
 nn.train(t_data)
