@@ -63,18 +63,18 @@ class MLP:
         # ∂z^L-1/∂W^L-1 = a^L-2
         # W^L-1
         delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
-        for i in reversed(range(len(self.weights)-1)): # HIGHLY UNOPTIMISED
-            self.weights[i+1] -= step * ((activations[i+1].T @ delta) / N)
-            delta = self.dfunc[i](zs[i]) * (self.weights[i+1] @ delta.T).T
-            loss = self.evaluate(t_data)
-            print(f"loss: {loss}")
+        for i in reversed(range(len(self.weights))):
+            self.weights[i] -= step * ((activations[i].T @ delta) / N)
+            delta = self.dfunc[i-1](zs[i-1]) * (delta @ self.weights[i].T)
+            
+        loss = self.evaluate(t_data)
+        print(f"loss: {loss}")
         
 # XOR
 nn = MLP()
 t_data = np.array([[0, 0, 1, 0],
-                #    [0, 1, 0, 1],
-                #    [1, 0, 0, 1],
-                #    [1, 1, 1, 0]
-                   ], dtype=float)
+                   [0, 1, 0, 1],
+                   [1, 0, 0, 1],
+                   [1, 1, 1, 0]], dtype=float)
 
 nn.train(t_data)
