@@ -46,8 +46,9 @@ class MLP:
     # np.mean(sq)                       # 8 / 4 = 2.0  -> divides by N * K (samples * outputs)
     # np.mean(np.sum(sq, axis=1))       # (4 + 4) / 2 = 4.0  -> divides by N only
     
-    def train(self, data: np.ndarray):
+    def train(self, data: np.ndarray, step: float = 0.01):
         X, Y = data[:, :2], data[:, 2:]
+        N = X.shape[0]
         out, zs, activations = self.feedforward(X)
         loss = self._evaluate(out, Y)
         print(f"loss: {loss}")
@@ -61,23 +62,12 @@ class MLP:
         # ∂a^L-1/∂z^L-1 = relu'(z^L-1)
         # ∂z^L-1/∂W^L-1 = a^L-2
         # W^L-1
-        start = (2*(out-Y)) * self.dfunc[-1](zs[-1])
-        print(f"zs: {zs[-1]}")
-        print(f"w: {self.weights[-1]}")
-        grad = []
+        delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
         for i in reversed(range(len(self.weights)-1)): # HIGHLY UNOPTIMISED
-            grad.append(start * activations[i].T)
-            
-            # print(f"activations: {activations[i]}")
-            # print(f"zs: {zs[i]}")
-            # print(f"w: {self.weights[i]}")
-            
-            break
-        grad.reverse()
-        print(grad)
-        self.weights[-1] -= 0.01 *grad[0]
-        loss = self.evaluate(t_data)
-        print(f"FINAL LOSS: {loss}") # IT FUCKING WORKS!!!
+            self.weights[i+1] -= step * ((activations[i+1].T @ delta) / N)
+            delta = self.dfunc[i](zs[i]) * (self.weights[i+1] @ delta.T).T
+            loss = self.evaluate(t_data)
+            print(f"loss: {loss}")
         
 # XOR
 nn = MLP()
