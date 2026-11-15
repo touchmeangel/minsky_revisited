@@ -19,8 +19,8 @@ The default model has the architecture **2 → 5 → 5 → 2**:
 ```text
       2 inputs       hidden layer 1      hidden layer 2       2 outputs
     ┌─────────┐      ┌────────────┐      ┌────────────┐      ┌──────────┐
-    │   x₁    │ ───▶ │            │ ───▶ │            │ ───▶ │ output 1│
-    │   x₂    │      │  5 × ReLU  │      │  5 × ReLU  │      │ output 2│
+    │   x₁    │ ───▶ │            │ ───▶ │            │ ───▶ │ output 1 │
+    │   x₂    │      │  5 × ReLU  │      │  5 × ReLU  │      │ output 2 │
     └─────────┘      └────────────┘      └────────────┘      └──────────┘
                                                                sigmoid
 ```
