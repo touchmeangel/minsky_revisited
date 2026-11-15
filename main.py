@@ -93,6 +93,7 @@ class MLP:
         model = MLP(sizes)
         model.weights, model.biases = weights, biases
         return model
+
 # XOR
 PATH = "model.npz"
 
