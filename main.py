@@ -1,3 +1,4 @@
+from pathlib import Path
 import numpy as np
 
 def sigmoid(x):
@@ -14,11 +15,14 @@ def derivative_relu(x):
     return (x > 0).astype(float)
 
 class MLP:
-    def __init__(self) -> None:
-        self.weights = [np.random.randn(2, 5), np.random.randn(5, 5), np.random.randn(5, 2)]
-        self.biases = [np.random.randn(5), np.random.randn(5), np.random.randn(2)]
-        self.func = [relu, relu, sigmoid]
-        self.dfunc = [derivative_relu, derivative_relu, derivative_sigmoid]
+    def __init__(self, sizes=(2, 5, 5, 2), seed=None) -> None:
+        rng = np.random.default_rng(seed)
+        self.weights = [rng.standard_normal((i, o)) * np.sqrt(2 / i)
+                        for i, o in zip(sizes[:-1], sizes[1:])]
+        self.biases = [np.zeros(o) for o in sizes[1:]]
+        hidden = len(sizes) - 2
+        self.func = [relu] * hidden + [sigmoid]
+        self.dfunc = [derivative_relu] * hidden + [derivative_sigmoid]
         
     def feedforward(self, X: np.ndarray) -> tuple[np.ndarray, list[np.ndarray], list[np.ndarray]]:
         a = X
@@ -72,18 +76,47 @@ class MLP:
                 self.weights[i] -= step * grad_W
                 self.biases[i] -= step * grad_b
             
+    def save(self, path: str) -> None:
+        arrays = {}
+        for i, (W, b) in enumerate(zip(self.weights, self.biases)):
+            arrays[f"W{i}"] = W
+            arrays[f"b{i}"] = b
+        np.savez(path, **arrays) 
+    
+    @staticmethod
+    def load(path: str) -> "MLP":
+        with np.load(path) as f:
+            n = len(f.files) // 2
+            weights = [f[f"W{i}"] for i in range(n)]
+            biases = [f[f"b{i}"] for i in range(n)]
+        sizes = (weights[0].shape[0], *[W.shape[1] for W in weights])
+        model = MLP(sizes)
+        model.weights, model.biases = weights, biases
+        return model
 # XOR
-nn = MLP()
+PATH = "model.npz"
+
+model_file = Path(PATH)
 t_data = np.array([[0, 0, 1, 0],
                    [0, 1, 0, 1],
                    [1, 0, 0, 1],
                    [1, 1, 1, 0]], dtype=float)
 
-before_loss = nn.evaluate(t_data)
-print(f"loss before: {before_loss}")
-nn.train(t_data, step=0.1, epochs=50000)
-loss = nn.evaluate(t_data)
-print(f"loss after ({(before_loss-loss)*100/before_loss}% improvement): {loss}")
+if model_file.exists():
+    nn = MLP.load(PATH)
+    print(f"loaded model at {PATH}")
+    loss = nn.evaluate(t_data)
+    print(f"loss: {loss}")
+else:
+    nn = MLP()
+    print("no model exists, starting training...")
+    before_loss = nn.evaluate(t_data)
+    print(f"loss before: {before_loss}")
+    nn.train(t_data, step=0.1, epochs=50000)
+    nn.save(PATH)
+    loss = nn.evaluate(t_data)
+    print(f"loss after ({(before_loss-loss)*100/before_loss}% improvement): {loss}")
+
 print(nn.feedforward(np.array([0, 0]))[0])
 print(nn.feedforward(np.array([0, 1]))[0])
 print(nn.feedforward(np.array([1, 0]))[0])
