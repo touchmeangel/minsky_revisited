@@ -67,7 +67,7 @@ class MLP:
             out, zs, activations = self.feedforward(X)
             if epoch % log_every == 0:
                 print(epoch, self._evaluate(out, Y))
-            delta = 2 * (out - Y) * self.dfunc[-1](zs[-1]) 
+            delta = 2 * (out - Y) * self.dfunc[-1](zs[-1])
             for i in reversed(range(len(self.weights))):
                 grad_W = ((activations[i].T @ delta) / N)
                 grad_b = delta.mean(axis=0)
