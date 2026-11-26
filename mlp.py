@@ -101,7 +101,7 @@ class MLP:
             if epoch % log_every == 0:
                 print(epoch, self._evaluate_cross_entropy(out, Y))
 
-            grads = self.gradients(zs, activations, out)
+            grads = self.gradients(zs, activations, Y)
             optimizer.step(grads)
 
     def save(self, path: str) -> None:

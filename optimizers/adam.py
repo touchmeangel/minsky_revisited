@@ -28,9 +28,9 @@ class Adam(Optimizer):
         self.unused_m = self.b1
         self.unused_v = self.b2
 
-    def step(self, grads):
+    def step(self, grads: list[np.ndarray]):
         grads = self._prepare_grads(grads)
-
+        
         for i, (param, grad) in enumerate(zip(self.params, grads)):
             grad = grad + self.weight_decay * param
 
@@ -42,6 +42,6 @@ class Adam(Optimizer):
             v_corrected = self.v[i] / (1 - self.unused_v)
 
             param -= self.lr * m_corrected/(np.sqrt(v_corrected) + self.eps)
-            
+
         self.unused_m *= self.b1
         self.unused_v *= self.b2

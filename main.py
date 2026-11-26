@@ -18,15 +18,25 @@ if model_file.exists():
     print(f"loss: {loss:.6f}")
 else:
     nn = MLP()
+    nn.save(PATH)
     print("no model exists, starting training...")
+    
+    before_loss = nn.evaluate(X, Y)
+    print(f"loss before: {before_loss:.6f}")
+    opt = SGD(nn.parameters())
+    nn.train(X, Y, opt, epochs=5000)
+    loss = nn.evaluate(X, Y)
+    print(f"[SGD] loss after ({(before_loss-loss)*100/before_loss:.6f}% improvement): {loss:.6f}")
+    
+    nn = MLP.load(PATH)    
     before_loss = nn.evaluate(X, Y)
     print(f"loss before: {before_loss:.6f}")
     opt = Adam(nn.parameters())
-    nn.train(X, Y, opt, epochs=5000)
+    nn.train(X, Y, opt, epochs=5000)    
 
-    # nn.save(PATH)
+    nn.save(PATH)
     loss = nn.evaluate(X, Y)
-    print(f"loss after ({(before_loss-loss)*100/before_loss:.6f}% improvement): {loss:.6f}")
+    print(f"[ADAM] loss after ({(before_loss-loss)*100/before_loss:.6f}% improvement): {loss:.6f}")
 
 print(nn.feedforward(np.array([0, 0]))[0].squeeze())
 print(nn.feedforward(np.array([0, 1]))[0].squeeze())
